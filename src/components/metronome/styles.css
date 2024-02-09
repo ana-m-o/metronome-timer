@@ -1,0 +1,47 @@
+.metronome {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 24px;
+  width: 320px;
+}
+
+.metronome__bpms {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.bpms_selector {
+  flex: 1
+}
+
+.bpm {
+  font-size: 48px;
+  border-radius: 50%;
+  width: 124px;
+  height: 124px;
+  overflow: hidden;
+}
+
+.bpm input {
+  text-align: center !important;
+  height: 120px;
+}
+
+.metronome__timer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px
+}
+
+.timer__input {
+  width: 100px
+}
