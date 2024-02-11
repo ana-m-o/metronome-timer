@@ -1,44 +1,49 @@
 import React, { useState, useEffect, useRef } from "react";
 import { InputNumber, Button } from "antd";
 import "./styles.css";
-import Click from './audio/click.mp3';
 
-const worker: Worker = new Worker(new URL('../../workers/metronomeWorker.ts', import.meta.url));
+const worker = new Worker("./metronome/webworkers/metronomeWorker.js");
 
-worker.onmessage = (event) => {
-  console.log(event.data); // Debería mostrar "Worker listo" en la consola
-};
+const Metronome = () => {
+  const [bpm, setBpm] = useState(60);
+  const [isActive, setIsActive] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
-const Metronome: React.FC = () => {
-  const [bpm, setBpm] = useState<number>(60);
-  const [isActive, setIsActive] = useState<boolean>(false);
-  const [timerDuration, setTimerDuration] = useState<number>(0);
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const soundRef = useRef<HTMLAudioElement>(new Audio(Click));
+  const audioContextRef = useRef(null);
 
-  const handleBpmChange = (value: number | null) => {
-    const newValue = value === null ? 60 : value;
-    setBpm(newValue);
+  const handleBpmChange = (value) => {
+    setBpm(value);
     if (isActive) {
-      worker.postMessage({ bpm: newValue });
+      worker.postMessage({ bpm: value });
     }
   };
 
-  const handleTimerChange = (value: number | null) => {
-    const newValue = value === null ? 0 : value;
-    setTimerDuration(newValue);
-    setTimeLeft(newValue * 60);
+  const handleTimerChange = (value) => {
+    setTimerDuration(value);
+    setTimeLeft(value * 60);
   };
 
   const playClick = () => {
-    if (soundRef.current) {
-      soundRef.current.currentTime = 0;
-      soundRef.current.play().catch((e) => console.error("Error al reproducir el sonido: ", e));
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
+    const oscillator = audioContextRef.current.createOscillator();
+    const gainNode = audioContextRef.current.createGain();
+
+    oscillator.type = "sine"; // Tipo de onda
+    oscillator.frequency.setValueAtTime(1000, audioContextRef.current.currentTime); // Frecuencia en Hz
+    gainNode.gain.setValueAtTime(0.5, audioContextRef.current.currentTime); // Volumen
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContextRef.current.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContextRef.current.currentTime + 0.05); // Duración del click
   };
 
-  const formatTime = (timeInSeconds: number): string => {
+  const formatTime = (timeInSeconds) => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = timeInSeconds % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
@@ -57,19 +62,21 @@ const Metronome: React.FC = () => {
   useEffect(() => {
     if (isActive) {
       worker.postMessage({ type: 'start', bpm: bpm });
+
     } else {
       worker.postMessage({ type: 'stop' });
     }
   }, [isActive, bpm]);
 
   useEffect(() => {
-    let metronomeInterval: number | undefined;
-    let timerInterval: number | undefined;
+    let metronomeInterval;
+    let timerInterval;
 
     const updateTimer = () => {
       if (timerDuration > 0 && timeLeft > 0) {
         setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
       } else if (timerDuration > 0 && timeLeft === 0) {
+        // Detener el metrónomo cuando el temporizador llega a 0
         setIsActive(false);
       }
     };
@@ -79,12 +86,12 @@ const Metronome: React.FC = () => {
     };
 
     if (isActive && bpm > 0) {
-      
+      playClick();
       const metronomeIntervalDuration = (60 / bpm) * 1000;
-      metronomeInterval = window.setInterval(playClick, metronomeIntervalDuration);
+      metronomeInterval = setInterval(playClick, metronomeIntervalDuration);
 
       // Actualiza elapsedTime cada segundo si el metrónomo está activo
-      timerInterval = window.setInterval(() => {
+      timerInterval = setInterval(() => {
         if (timerDuration > 0) {
           updateTimer();
         } else {
@@ -136,7 +143,7 @@ const Metronome: React.FC = () => {
           placeholder="Duración del Temporizador (minutos)"
           addonAfter="min"
           className="timer__input"
-          inputMode="numeric"
+          inputMode="decimnal"
         />
 
         {timerDuration > 0 ? (
