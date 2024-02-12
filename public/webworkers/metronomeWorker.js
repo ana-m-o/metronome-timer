@@ -1,4 +1,5 @@
 let intervalId;
+
 const tick = () => {
   postMessage("tick");
 };

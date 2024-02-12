@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { InputNumber, Button } from "antd";
 import "./styles.css";
 
-const worker = new Worker("./metronome/webworkers/metronomeWorker.js");
+const worker = new Worker("./webworkers/metronomeWorker.js");
 
 const Metronome = () => {
   const [bpm, setBpm] = useState(60);
@@ -50,22 +50,14 @@ const Metronome = () => {
   };
 
   useEffect(() => {
-    worker.onmessage = (e) => {
-      if (e.data === "tick") {
-        playClick();
-      }
-    };
+    if (isActive) {
+      worker.postMessage({ type: "start", bpm: bpm });
+      playClick();
+    } else {
+      worker.postMessage({ type: "stop" });
+    }
 
     return () => worker.terminate(); // Terminar el worker al desmontar el componente
-  }, []);
-
-  useEffect(() => {
-    if (isActive) {
-      worker.postMessage({ type: 'start', bpm: bpm });
-
-    } else {
-      worker.postMessage({ type: 'stop' });
-    }
   }, [isActive, bpm]);
 
   useEffect(() => {
@@ -86,7 +78,6 @@ const Metronome = () => {
     };
 
     if (isActive && bpm > 0) {
-      playClick();
       const metronomeIntervalDuration = (60 / bpm) * 1000;
       metronomeInterval = setInterval(playClick, metronomeIntervalDuration);
 
@@ -129,6 +120,7 @@ const Metronome = () => {
             value={bpm}
             onChange={handleBpmChange}
             className="bpm"
+            name="bpm"
           />
         </div>
 
@@ -144,7 +136,12 @@ const Metronome = () => {
           addonAfter="min"
           className="timer__input"
           inputMode="decimnal"
+          name="minutes"
         />
+
+        <Button onClick={() => setIsActive(!isActive)} type="primary">
+          {isActive ? "Parar" : "Iniciar"}
+        </Button>
 
         {timerDuration > 0 ? (
           <div>Tiempo Restante: {formatTime(timeLeft)}</div>
@@ -152,10 +149,6 @@ const Metronome = () => {
           <div>Tiempo Transcurrido: {formatTime(elapsedTime)}</div>
         )}
       </div>
-
-      <Button onClick={() => setIsActive(!isActive)} type="primary">
-        {isActive ? "Parar" : "Iniciar"}
-      </Button>
     </div>
   );
 };
