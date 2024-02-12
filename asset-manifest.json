@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/metronome-timer/static/css/main.ddcfa8b1.css",
-    "main.js": "/metronome-timer/static/js/main.5a5fcf00.js",
+    "main.js": "/metronome-timer/static/js/main.df4a7fe9.js",
     "static/js/592.86807f1c.chunk.js": "/metronome-timer/static/js/592.86807f1c.chunk.js",
     "index.html": "/metronome-timer/index.html",
     "main.ddcfa8b1.css.map": "/metronome-timer/static/css/main.ddcfa8b1.css.map",
-    "main.5a5fcf00.js.map": "/metronome-timer/static/js/main.5a5fcf00.js.map",
+    "main.df4a7fe9.js.map": "/metronome-timer/static/js/main.df4a7fe9.js.map",
     "592.86807f1c.chunk.js.map": "/metronome-timer/static/js/592.86807f1c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ddcfa8b1.css",
-    "static/js/main.5a5fcf00.js"
+    "static/js/main.df4a7fe9.js"
   ]
 }
