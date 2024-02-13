@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { InputNumber, Button } from "antd";
+import { InputNumber, Button, Flex, Progress } from "antd";
 import "./styles.css";
+import { ClockCircleOutlined } from "@ant-design/icons";
 
 const worker = new Worker("./webworkers/metronomeWorker.js");
 
@@ -15,14 +16,18 @@ const Metronome = () => {
 
   const handleBpmChange = (value) => {
     setBpm(value);
-    if (isActive) {
-      worker.postMessage({ bpm: value });
-    }
+    worker.postMessage({ type: 'bpmChange', bpm: value });
   };
 
   const handleTimerChange = (value) => {
     setTimerDuration(value);
     setTimeLeft(value * 60);
+  };
+
+  const handleReset = () => {
+    setIsActive(false);
+    setTimeLeft(timerDuration * 60);
+    setElapsedTime(0);
   };
 
   const playClick = () => {
@@ -127,26 +132,49 @@ const Metronome = () => {
         <Button onClick={increaseBpm}>+5 BPM</Button>
       </div>
       <div className="metronome__timer">
-        <InputNumber
-          min={0}
-          max={60}
-          value={timerDuration}
-          onChange={handleTimerChange}
-          placeholder="Duración del Temporizador (minutos)"
-          addonAfter="min"
-          className="timer__input"
-          inputMode="decimnal"
-          name="minutes"
-        />
+        <Flex gap="middle" align="center">
+          Temporizador:
+          <InputNumber
+            min={0}
+            max={60}
+            value={timerDuration}
+            onChange={handleTimerChange}
+            placeholder="Duración del Temporizador (minutos)"
+            addonAfter="min"
+            className="timer__input"
+            inputMode="decimnal"
+            name="minutes"
+          />
 
-        <Button onClick={() => setIsActive(!isActive)} type="primary">
-          {isActive ? "Parar" : "Iniciar"}
-        </Button>
+        </Flex>
 
-        {timerDuration > 0 ? (
-          <div>Tiempo Restante: {formatTime(timeLeft)}</div>
-        ) : (
-          <div>Tiempo Transcurrido: {formatTime(elapsedTime)}</div>
+        <Flex gap="middle" align="center">
+          <Button onClick={handleReset} type="link">Reiniciar</Button>
+          <Button onClick={() => setIsActive(!isActive)} type="primary">
+            {isActive ? "Parar" : "Iniciar"}
+          </Button>
+
+        </Flex>
+
+        <Flex gap="small" align="center">
+          <ClockCircleOutlined />
+          {timerDuration > 0 ? (
+            /* Tiempo Restante: */
+            <div>{formatTime(timeLeft)}</div>
+          ) : (
+            /* Tiempo Transcurrido: */
+            <div>{formatTime(elapsedTime)}</div>
+          )}
+
+        </Flex>
+
+        {/* Barra de progreso de ant en caso de habilitar el timer */}
+        {timerDuration > 0 && (
+          <Progress
+            percent={timerDuration > 0 ? ((timerDuration * 60 - timeLeft) / (timerDuration * 60)) * 100 : (elapsedTime / 60) * 100}
+            status={timeLeft !== 0 ? 'active' : null}
+            showInfo={false}
+          />
         )}
       </div>
     </div>

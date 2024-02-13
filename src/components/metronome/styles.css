@@ -17,10 +17,6 @@
   width: 100%;
 }
 
-.bpms_selector {
-  flex: 1
-}
-
 .bpm {
   font-size: 48px;
   border-radius: 50%;
@@ -39,9 +35,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px
+  gap: 16px;
 }
 
 .timer__input {
-  width: 100px
+  width: 100px;
 }
